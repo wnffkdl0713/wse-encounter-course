@@ -154,10 +154,12 @@
             </div>
         </div>
 
-        <!-- Custom Notification Message Box -->
-        <div id="msg-box" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-100 px-5 py-4 rounded-xl border-2 text-xs shadow-2xl flex items-center gap-3 max-w-xs w-[90%] justify-between z-50 transition-all duration-300">
-            <span id="msg-text">Correct Answer!</span>
-            <button onclick="closeMsg()" class="material-icons text-slate-400 hover:text-white text-sm">close</button>
+        <!-- Custom Notification Message Box Container (Centering Wrapper to avoid translation conflicts) -->
+        <div id="msg-box-container" class="hidden fixed bottom-6 left-0 right-0 flex justify-center z-50 px-4 pointer-events-none">
+            <div id="msg-box" class="bg-slate-800 text-slate-100 px-5 py-4 rounded-xl border-2 text-xs shadow-2xl flex items-center gap-3 max-w-sm w-full justify-between pointer-events-auto transition-all duration-300">
+                <span id="msg-text">Correct Answer!</span>
+                <button onclick="closeMsg()" class="material-icons text-slate-400 hover:text-white text-sm">close</button>
+            </div>
         </div>
 
         <!-- Footer Info -->
@@ -369,16 +371,17 @@
         }
 
         function showMsg(text, type) {
+            const container = document.getElementById('msg-box-container');
             const box = document.getElementById('msg-box');
             const txtEl = document.getElementById('msg-text');
             txtEl.textContent = text;
             
             if (type === "success") {
-                box.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-emerald-950/95 text-emerald-100 px-5 py-4 rounded-xl border-2 border-emerald-500 text-xs shadow-2xl flex items-center gap-3 max-w-sm w-[90%] justify-between z-50 animate-bounce";
+                box.className = "bg-emerald-950/95 text-emerald-100 px-5 py-4 rounded-xl border-2 border-emerald-500 text-xs shadow-2xl flex items-center gap-3 max-w-sm w-full justify-between transition-all duration-300 animate-bounce";
             } else {
-                box.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-rose-950/95 text-rose-100 px-5 py-4 rounded-xl border-2 border-rose-600 text-xs shadow-2xl flex items-center gap-3 max-w-sm w-[90%] justify-between z-50";
+                box.className = "bg-rose-950/95 text-rose-100 px-5 py-4 rounded-xl border-2 border-rose-600 text-xs shadow-2xl flex items-center gap-3 max-w-sm w-full justify-between transition-all duration-300";
             }
-            box.classList.remove('hidden');
+            container.classList.remove('hidden');
 
             setTimeout(() => {
                 closeMsg();
@@ -386,7 +389,7 @@
         }
 
         function closeMsg() {
-            document.getElementById('msg-box').classList.add('hidden');
+            document.getElementById('msg-box-container').classList.add('hidden');
         }
 
         function updateScore() {
