@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall Street English - Encounter Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script>
+        // Wall Street English 공식 브랜드 컬러에 맞춘 테일윈드 설정 확장
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wseBlue: '#002F6C',    // WSE 헤리티지 네이비 블루 (신뢰감)
+                        wseRed: '#E31B23',     // WSE 액티브 레드 (말풍선 테두리 및 액션)
+                        wseYellow: '#FFCD00',  // WSE 에너지 골드 옐로우 (포인트/만점)
+                        wseLightBlue: '#E6F0FA' // 부드러운 배경용 라이트 블루
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #001A3D 0%, #002F6C 100%);
+            color: #f8fafc;
+        }
+        .card-shadow {
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.4), 0 8px 15px -6px rgba(0, 0, 0, 0.4);
+        }
+        /* 말풍선 꼬리 효과 (WSE의 Speech Bubble 컨셉) */
+        .speech-bubble-tip {
+            position: relative;
+        }
+        .speech-bubble-tip::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 24px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid rgba(15, 23, 42, 0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-y-auto p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-md w-full mx-auto bg-slate-900/90 backdrop-blur-md rounded-2xl border-2 border-wseBlue p-6 card-shadow flex flex-col justify-between min-h-[580px] my-auto">
+        
+        <!-- Game Header (WSE Identity) -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-1.5">
+                    <!-- WSE 상징인 Open Door & Speech Bubble을 형상화한 로고 플레이 -->
+                    <div class="w-2.5 h-6 bg-wseRed rounded-full"></div>
+                    <span class="text-xs font-bold tracking-wider text-slate-100 uppercase">WALL STREET ENGLISH</span>
+                </div>
+                <div class="flex items-center gap-1 text-wseYellow">
+                    <span class="material-icons text-sm">stars</span>
+                    <span id="score-display" class="text-xs font-bold font-mono">Score: 0</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 h-2 rounded-full mb-6 overflow-hidden border border-slate-700/50">
+                <div id="progress-bar" class="bg-gradient-to-r from-wseRed to-wseYellow h-full w-0 transition-all duration-500 ease-out"></div>
+            </div>
+        </div>
+
+        <!-- Dynamic Content Area -->
+        <div id="game-content" class="flex-grow flex flex-col justify-center my-4">
+            
+            <!-- Start Screen with Unit Selection -->
+            <div id="start-screen" class="text-center space-y-4">
+                <div class="w-20 h-20 bg-wseBlue/40 text-wseYellow rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-wseRed shadow-lg animate-pulse">
+                    <span class="material-icons text-4xl">meeting_room</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-white">Encounter Course<br><span class="text-wseYellow font-medium text-lg">Interactive Story Adventure</span></h1>
+                <p class="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+                    드라마 속 주인공들의 고민을 해결하고<br>
+                    올바른 영어 표현을 찾아 해피엔딩을 만들어주세요! 🎬
+                </p>
+
+                <!-- 레슨 선택 셀렉트박스 (쉽게 Unit을 확장할 수 있는 문) -->
+                <div class="space-y-1.5 text-left max-w-xs mx-auto pt-3">
+                    <label for="lesson-select" class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">학습할 레슨 선택 (Unit Select)</label>
+                    <div class="relative">
+                        <select id="lesson-select" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-wseRed appearance-none cursor-pointer">
+                            <!-- JS에서 레슨 목록이 동적으로 채워집니다 -->
+                        </select>
+                        <span class="material-icons absolute right-3 top-3.5 text-slate-400 pointer-events-none text-sm">expand_more</span>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="w-full mt-6 bg-wseRed hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg shadow-wseRed/30 flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
+                    시작하기 (Start Lesson) <span class="material-icons text-sm">play_arrow</span>
+                </button>
+            </div>
+
+            <!-- Scenario Screen (Hidden Initially) -->
+            <div id="scenario-screen" class="hidden space-y-6">
+                <!-- Character Avatar & Scene Info -->
+                <div class="flex items-center gap-3 bg-slate-800/60 p-3 rounded-xl border border-slate-700/50">
+                    <div id="char-avatar" class="w-10 h-10 rounded-full bg-wseBlue text-white border border-wseRed/40 flex items-center justify-center text-md font-bold">S</div>
+                    <div>
+                        <div id="scene-title" class="text-[10px] text-wseYellow font-bold uppercase tracking-wider">Scene 1</div>
+                        <div id="char-name" class="text-xs font-semibold text-white">Character Name</div>
+                    </div>
+                </div>
+
+                <!-- Scenario Description (Speech Bubble Style) -->
+                <div class="speech-bubble-tip">
+                    <p id="scenario-text" class="text-xs text-slate-200 leading-relaxed bg-slate-950/60 p-4 rounded-xl border border-slate-800 min-h-[90px]">
+                        Scenario details will go here...
+                    </p>
+                </div>
+
+                <!-- Choices -->
+                <div id="choices-container" class="space-y-2.5 pt-2">
+                    <!-- Choice buttons will be dynamically rendered here -->
+                </div>
+            </div>
+
+            <!-- Result Screen (Hidden Initially) -->
+            <div id="result-screen" class="hidden text-center space-y-4 py-2">
+                <div id="result-icon-container" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-2">
+                    <span id="result-icon" class="material-icons text-3xl">emoji_events</span>
+                </div>
+                <h2 id="result-title" class="text-xl font-bold text-white">미션 완료!</h2>
+                <p id="result-desc" class="text-xs text-slate-300 leading-relaxed px-4">
+                    성공적인 결과를 달성했습니다!
+                </p>
+                
+                <!-- 동적 복습 노트 영역 -->
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 text-left space-y-2 font-mono text-xs">
+                    <div class="text-wseYellow font-bold mb-1 flex items-center gap-1">
+                        <span class="material-icons text-xs">auto_stories</span>
+                        <span>Today's Keywords & Review:</span>
+                    </div>
+                    <ul id="review-list" class="space-y-1 list-disc list-inside text-slate-300 text-[11px]">
+                        <!-- 복습 단어 리스트가 동적으로 갱신됩니다 -->
+                    </ul>
+                </div>
+
+                <button onclick="restartGame()" class="w-full mt-4 bg-wseBlue hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl border border-wseRed/40 transition duration-200 text-xs tracking-wider">
+                    다른 레슨 도전하기 (Choose Another Unit)
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Notification Message Box -->
+        <div id="msg-box" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-100 px-5 py-4 rounded-xl border-2 text-xs shadow-2xl flex items-center gap-3 max-w-xs w-[90%] justify-between z-50 transition-all duration-300">
+            <span id="msg-text">Correct Answer!</span>
+            <button onclick="closeMsg()" class="material-icons text-slate-400 hover:text-white text-sm">close</button>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="text-center text-[9px] text-slate-500 mt-2 border-t border-slate-800/60 pt-3 flex justify-between items-center px-1">
+            <span>Wall Street English Companion</span>
+            <span class="font-bold text-wseRed">Opens the door to the world</span>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 📚 LESSON DATABASE (여기에 새로운 레슨을 계속 무제한 추가할 수 있습니다!)
+         * 기존 코드의 scenarios 배열을 '유닛별'로 묶어, 코치님이 쉽게 확장할 수 있도록 설계했습니다.
+         */
+        const LESSON_DATABASE = {
+            "unit37": {
+                id: "unit37",
+                title: "Encounter 37 (드라마 속 주인공 돕기)",
+                reviewNotes: [
+                    "<strong>afford:</strong> 경제적 여유가 되다 (can/can't와 주로 매칭)",
+                    "<strong>improvise:</strong> 대본/레시피 없이 즉흥적으로 하다",
+                    "<strong>appointment:</strong> (의사/공식) 정식 약속/예약",
+                    "<strong>shuttle:</strong> 특정 구간을 정기 왕복하는 셔틀버스"
+                ],
+                scenarios: [
+                    {
+                        scene: "Scene 1: Shen의 이사 고민",
+                        character: "Shen ( distraught )",
+                        avatar: "S",
+                        text: "미드 'Crime Scene Detective' 촬영지가 캐나다 위니펙으로 바뀌어 션이 고민에 빠졌습니다. 마티가 위니펙으로 이사가라고 권유하지만, 션은 이사 갈 돈이 없다고 말하네요. 빈칸에 어울리는 필수 동사는?\n\n\"I want to move, but I can't _______ to move there.\"",
+                        choices: [
+                            { text: "afford (금전적/시간적 여유가 있다)", correct: true, score: 20 },
+                            { text: "permit (허락하다)", correct: false, score: 0 },
+                            { text: "support (부양하다)", correct: false, score: 0 }
+                        ],
+                        successMsg: "정답! 'can't afford'는 실생활에서 '도저히 돈(시간)이 안 된다'고 할 때 입에 달고 사는 정말 중요한 기초 표현이에요!"
+                    },
+                    {
+                        scene: "Scene 2: Sofi의 주방 즉흥 요리 도전",
+                        character: "Sofi ( nervous )",
+                        avatar: "F",
+                        text: "레스토랑의 헤드 셰프 렌조가 나타나지 않았습니다! 당황한 소피지만 본인의 감각을 믿고 레시피 없이 직접 '즉흥적으로 요리하기'로 결심합니다. 알맞은 어휘는?",
+                        choices: [
+                            { text: "prepare the recipes", correct: false, score: 0 },
+                            { text: "improvise the recipes", correct: true, score: 20 },
+                            { text: "order the recipes", correct: false, score: 0 }
+                        ],
+                        successMsg: "훌륭합니다! 'improvise'는 재즈 즉흥 연주, 대본 없는 즉흥 연설, 그리고 레시피 없이 있는 재료로 뚝딱 요리할 때 완벽하게 어울려요!"
+                    },
+                    {
+                        scene: "Scene 3: Carlos의 예약을 위한 제안",
+                        character: "Dr. Nguyen ( concerned )",
+                        avatar: "N",
+                        text: "사고 수습 후에도 무기력한 카를로스에게 의사 선생님이 정식으로 방문 예약을 잡고 대면 진료를 하자고 조언합니다. 빈칸에 들어갈 격식 있는 '예약' 표현은?\n\n\"You should make an ________ to see me.\"",
+                        choices: [
+                            { text: "appointment (의사/전문가 대면 예약)", correct: true, score: 20 },
+                            { text: "promise (개인적인 신뢰/약속)", correct: false, score: 0 },
+                            { text: "reservation (식당 자리/호텔 방 예약)", correct: false, score: 0 }
+                        ],
+                        successMsg: "딩동댕! 식당이나 방을 확보할 때는 'reservation'을 쓰지만, 의사·변호사·비즈니스 미팅처럼 대인 시간 약속은 꼭 'appointment'를 써야 합니다."
+                    },
+                    {
+                        scene: "Scene 4: 느릿느릿 공항 셔틀버스",
+                        character: "Passenger ( practical )",
+                        avatar: "P",
+                        text: "네 명의 여행자가 타고 있는 셔틀버스가 너무 느립니다. 이들은 렌터카를 빌려서 비용을 뿜빵(?)하기로 합의하네요. '셔틀버스'에 들어갈 단어는?\n\n\"We are on an airport ________ bus.\"",
+                        choices: [
+                            { text: "shuttle", correct: true, score: 20 },
+                            { text: "subway", correct: false, score: 0 },
+                            { text: "express", correct: false, score: 0 }
+                        ],
+                        successMsg: "참 잘했어요! 특정 지점 사이를 반복 왕복하며 승객을 실어 나르는 버스는 바로 'shuttle'이라고 부릅니다."
+                    },
+                    {
+                        scene: "Scene 5: 쿨하게 대화 마무리하기",
+                        character: "Daily English Master",
+                        avatar: "W",
+                        text: "원어민 친구와 즐겁게 캐주얼 대화를 나누다가 \"나 이만 가봐야 해!\"라고 자연스럽게 자리를 뜰 때 가장 자연스러운 작별 인사 표현을 골라보세요.",
+                        choices: [
+                            { text: "How's it going?", correct: false, score: 0 },
+                            { text: "I'd better be off. / I've got to go.", correct: true, score: 20 },
+                            { text: "What's new?", correct: false, score: 0 }
+                        ],
+                        successMsg: "퍼펙트! 'I'd better be off' 또는 'I've got to go now'는 비즈니스 미팅이 아닌 일상에서 쿨하게 먼저 일어설 때 필수적인 패턴입니다."
+                    }
+                ]
+            },
+            
+            // 💡 코치님! 다음 레슨(예: Unit 38)을 추가하고 싶으실 땐 아래 중괄호 영역을 복사해서 데이터만 바꿔주면 무제한 확장됩니다!
+            "unit38": {
+                id: "unit38",
+                title: "Encounter 38 (샘플 유닛 미리보기)",
+                reviewNotes: [
+                    "<strong>burst someone's bubble:</strong> 환상을 깨뜨리다",
+                    "<strong>patent:</strong> 특허를 받다",
+                    "<strong>make social arrangements:</strong> 사교 약속 잡기"
+                ],
+                scenarios: [
+                    {
+                        scene: "Scene 1: Rima의 하와이 여행 환상",
+                        character: "Todd ( realistic )",
+                        avatar: "T",
+                        text: "리마는 하와이에 갈 생각에 행복해하고 있었는데, 토드가 그 아이디어가 이미 30년 전에 특허 등록되었다며 환상을 와장창 깨버렸습니다. '환상을 깨다'의 영어 관용구는?",
+                        choices: [
+                            { text: "burst her bubble", correct: true, score: 50 },
+                            { text: "break her window", correct: false, score: 0 },
+                            { text: "catch her breath", correct: false, score: 0 }
+                        ],
+                        successMsg: "대박! 'burst one's bubble'은 부풀어 오른 비눗방울(환상, 기대)을 콕 찔러 터뜨린다는 뜻의 아주 찰진 원어민 이디엄이에요!"
+                    },
+                    {
+                        scene: "Scene 2: 이미 누군가 등록한 아이디어",
+                        character: "Rima ( disappointed )",
+                        avatar: "R",
+                        text: "이미 30년 전에 등록되었다는 '특허'에 해당하는 올바른 단어는 무엇일까요?\n\n\"Her idea had already been _______ 30 years ago.\"",
+                        choices: [
+                            { text: "purchased (구매된)", correct: false, score: 0 },
+                            { text: "patented (특허를 받은)", correct: true, score: 50 },
+                            { text: "canceled (취소된)", correct: false, score: 0 }
+                        ],
+                        successMsg: "정답! 독점적인 기술적 권리인 '특허'는 영어로 'patent'라고 하며, 동사로도 '특허를 취득하다'로 자주 쓰입니다!"
+                    }
+                ]
+            }
+        };
+
+        let currentLesson = "unit37";
+        let currentStage = 0;
+        let score = 0;
+
+        // 페이지가 열리면 레슨 선택 셀렉트박스를 채웁니다
+        window.onload = function() {
+            const selectEl = document.getElementById('lesson-select');
+            selectEl.innerHTML = '';
+            
+            Object.keys(LESSON_DATABASE).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = LESSON_DATABASE[key].title;
+                selectEl.appendChild(opt);
+            });
+        };
+
+        function startGame() {
+            const selectEl = document.getElementById('lesson-select');
+            currentLesson = selectEl.value; // 선택한 Unit을 로드
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('scenario-screen').classList.remove('hidden');
+            score = 0;
+            currentStage = 0;
+            updateScore();
+            loadScenario();
+        }
+
+        function loadScenario() {
+            const lessonData = LESSON_DATABASE[currentLesson];
+            const scenarios = lessonData.scenarios;
+
+            if (currentStage >= scenarios.length) {
+                endGame();
+                return;
+            }
+
+            const data = scenarios[currentStage];
+            
+            // 프로그레스 바 계산
+            const progress = (currentStage / scenarios.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+
+            // UI 텍스트 채우기
+            document.getElementById('scene-title').textContent = `Scene ${currentStage + 1} of ${scenarios.length}`;
+            document.getElementById('char-name').textContent = data.character;
+            document.getElementById('char-avatar').textContent = data.avatar;
+            document.getElementById('scenario-text').innerHTML = data.text.replace(/\n/g, '<br>');
+
+            // 선택지 렌더링
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+            
+            data.choices.forEach(choice => {
+                const button = document.createElement('button');
+                // WSE 브랜드 네이비 블루 및 마우스 호버 시 레드 아웃라인 효과
+                button.className = "w-full text-left bg-slate-800 hover:bg-slate-700/80 hover:border-wseRed active:bg-slate-700 text-slate-100 font-medium py-3 px-4 rounded-xl border border-slate-700 transition duration-150 text-xs flex justify-between items-center";
+                button.innerHTML = `<span>${choice.text}</span> <span class="material-icons text-slate-500 text-sm">arrow_forward</span>`;
+                button.onclick = () => selectChoice(choice, data.successMsg);
+                container.appendChild(button);
+            });
+        }
+
+        function selectChoice(choice, successMsg) {
+            if (choice.correct) {
+                const lessonData = LESSON_DATABASE[currentLesson];
+                // 배점 처리 (만점이 100점이 되도록 밸런싱)
+                const pointPerQuestion = 100 / lessonData.scenarios.length;
+                score += pointPerQuestion;
+                
+                updateScore();
+                showMsg(successMsg, "success");
+                currentStage++;
+                
+                // 정답 메시지를 충분히 읽을 시간을 준 뒤 다음 단계로
+                setTimeout(() => {
+                    loadScenario();
+                }, 1800);
+            } else {
+                showMsg("❌ 앗, 조금 빗나갔어요! 드라마 스토리 요약을 다시 떠올려보세요.", "error");
+            }
+        }
+
+        function showMsg(text, type) {
+            const box = document.getElementById('msg-box');
+            const txtEl = document.getElementById('msg-text');
+            txtEl.textContent = text;
+            
+            if (type === "success") {
+                box.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-emerald-950/95 text-emerald-100 px-5 py-4 rounded-xl border-2 border-emerald-500 text-xs shadow-2xl flex items-center gap-3 max-w-sm w-[90%] justify-between z-50 animate-bounce";
+            } else {
+                box.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-rose-950/95 text-rose-100 px-5 py-4 rounded-xl border-2 border-rose-600 text-xs shadow-2xl flex items-center gap-3 max-w-sm w-[90%] justify-between z-50";
+            }
+            box.classList.remove('hidden');
+
+            setTimeout(() => {
+                closeMsg();
+            }, 3500);
+        }
+
+        function closeMsg() {
+            document.getElementById('msg-box').classList.add('hidden');
+        }
+
+        function updateScore() {
+            // 반올림하여 깔끔하게 점수 표시
+            document.getElementById('score-display').textContent = `Score: ${Math.round(score)}`;
+        }
+
+        function endGame() {
+            document.getElementById('progress-bar').style.width = `100%`;
+            document.getElementById('scenario-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            const iconContainer = document.getElementById('result-icon-container');
+            const icon = document.getElementById('result-icon');
+            const title = document.getElementById('result-title');
+            const desc = document.getElementById('result-desc');
+            const reviewList = document.getElementById('review-list');
+
+            const lessonData = LESSON_DATABASE[currentLesson];
+
+            // 복습 노트 채우기
+            reviewList.innerHTML = '';
+            lessonData.reviewNotes.forEach(note => {
+                const li = document.createElement('li');
+                li.innerHTML = note;
+                reviewList.appendChild(li);
+            });
+
+            if (Math.round(score) >= 100) {
+                // 만점 시 WSE 골드 옐로우 테두리 적용
+                iconContainer.className = "w-16 h-16 bg-wseYellow/10 text-wseYellow rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-wseYellow animate-bounce";
+                icon.textContent = "military_tech";
+                title.textContent = "100점 만점! 완벽합니다 🏆";
+                desc.textContent = "미션을 멋지게 성공하여 주인공들을 구출했습니다! 오늘 배운 최고의 실전 표현들로 스터디 멤버들과 재미있게 토크를 나눠보세요!";
+            } else {
+                iconContainer.className = "w-16 h-16 bg-slate-800 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-slate-600";
+                icon.textContent = "sentiment_satisfied";
+                title.textContent = "참 잘하셨습니다!";
+                desc.textContent = `최종 점수: ${Math.round(score)}점! 복습 노트를 읽어보고 만점을 향해 다시 도전해 볼까요?`;
+            }
+        }
+
+        function restartGame() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('progress-bar').style.width = `0%`;
+            score = 0;
+            currentStage = 0;
+            updateScore();
+        }
+    </script>
+</body>
+</html>
